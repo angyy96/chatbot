@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { parentPort, threadId } from 'node:worker_threads';
 import { provider, isWindows } from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/std-env/dist/index.mjs';
-import { defineEventHandler, handleCacheHeaders, createEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, setResponseStatus, getRequestHeader, getRequestHeaders, setResponseHeader, createApp, createRouter as createRouter$1, toNodeListener, fetchWithEvent, lazyEventHandler, getQuery, createError } from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, createEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, setResponseStatus, getRequestHeader, getRequestHeaders, setResponseHeader, createApp, createRouter as createRouter$1, toNodeListener, fetchWithEvent, lazyEventHandler, readBody, getQuery, createError } from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/h3/dist/index.mjs';
 import { Configuration, OpenAIApi } from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/openai/dist/index.js';
 import { createRenderer } from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/vue-bundle-renderer/dist/runtime.mjs';
 import devalue from 'file:///Users/annapushnikova/Projects/chatbot/node_modules/@nuxt/devalue/dist/devalue.mjs';
@@ -628,6 +628,7 @@ const errorDev = /*#__PURE__*/Object.freeze({
 });
 
 const ai_post = defineEventHandler(async (event) => {
+  const body = await readBody(event);
   const { OPENAI_API_KEY } = useRuntimeConfig();
   const configuration = new Configuration({
     apiKey: OPENAI_API_KEY
@@ -635,7 +636,7 @@ const ai_post = defineEventHandler(async (event) => {
   const openai = new OpenAIApi(configuration);
   const chat_completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: "Hello world" }]
+    messages: body.messages || [{ role: "user", content: "Hello world" }]
   });
   return chat_completion.data;
 });

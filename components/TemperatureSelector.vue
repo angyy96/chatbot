@@ -1,10 +1,10 @@
 <script setup lang="ts">
 defineProps<{
-  modelValue: number;
-}>();
+  modelValue: number
+}>()
 defineEmits<{
-  (e: "update:modelValue", payload: number): void;
-}>();
+  (e: "update:modelValue", payload: number): void
+}>()
 </script>
 <template>
   <input

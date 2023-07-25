@@ -12,4 +12,14 @@ Authorization: Bearer {{$dotenv NUXT_OPENAI_API_KEY}}
 }
 
 ### Nuxt API Endpoint
+
 POST http://localhost:3000/api/ai
+Content-Type: application/json
+
+{
+  "messages": [
+    {
+      "role": "user", "content": "Why the sky is blue?"
+    }
+  ],
+}
