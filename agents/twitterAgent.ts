@@ -10,7 +10,7 @@ export const twitterAgent = createAgent((context) => {
       },
       {
         role: "user",
-        content: `Create a tweet about the following article:  ${context.url}. Use line breaks for easy reading. MUST be shorter than 280 characters! MUST include URL`,
+        content: `Create a tweet about the following article:  ${context.url}. Use line breaks for easy reading. MUST include URL`,
       },
     ],
     max_tokens: 350,

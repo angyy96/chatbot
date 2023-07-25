@@ -627,8 +627,116 @@ const errorDev = /*#__PURE__*/Object.freeze({
       template: template
 });
 
+const customerSupportAgent = createAgent((context) => {
+  return {
+    messages: [
+      /**
+       * Train bot to only respond to app specific questions
+       */
+      {
+        role: "system",
+        content: `You are a helpful customer support agent for the 'Social Media Post Generator' application. 
+        This software takes an article URL and makes an announcement. Don't answer any question not related to the 'Social Media Post Generator' application.`
+      },
+      {
+        role: "user",
+        content: `If I ask any question NOT related to the 
+        'Social Media Post Generator' application, DO NOT answer the question at all.
+        Instead politely decline.
+        `
+      },
+      {
+        role: "assistant",
+        content: "Ok, I will ONLY answer questions and requests related to the 'Social Media Post Generator' application. I will politely decline to answer all others."
+      },
+      /**
+       * Train bot with app specific information
+       */
+      // email
+      { role: "user", content: "What's your email address" },
+      { role: "assistant", content: "support@test.com" },
+      // tech used
+      {
+        role: "user",
+        content: "How is 'Social Media Post Generator' built?"
+      },
+      { role: "assistant", content: "With GPT-3 and Vue.js! " },
+      // human support
+      { role: "user", content: "Is support available 24/7" },
+      {
+        role: "assistant",
+        content: "No, but email us at support@test.com and we will respond within 1 business day"
+      },
+      // how to use
+      { role: "user", content: "Can I import posts from a URL" },
+      {
+        role: "assistant",
+        content: "Yes click the import from URL button at the top of the article page"
+      },
+      // create a tweet
+      {
+        role: "user",
+        content: "Can you create a tweet for this article: {any url here}"
+      },
+      {
+        role: "assistant",
+        content: "{insert post text here}. \n [Share on Twitter](https://twitter.com/intent/tweet?text={insert post text here})"
+      },
+      ...context.messages
+    ],
+    temperature: 0
+  };
+});
+
+const facebookAgent = createAgent((context) => {
+  return {
+    messages: [
+      {
+        role: "system",
+        content: "You are a friendly social media influencer sharing a new blog post"
+      },
+      {
+        role: "user",
+        content: `Create a facebook post to hype the following article:  ${context.url}. Use line breaks for easy reading`
+      }
+    ]
+  };
+});
+
+const twitterAgent = createAgent((context) => {
+  return {
+    messages: [
+      {
+        role: "system",
+        content: "You are an exciting social media influencer sharing a new blog post"
+      },
+      {
+        role: "user",
+        content: `Create a tweet about the following article:  ${context.url}. Use line breaks for easy reading. MUST include URL`
+      }
+    ],
+    max_tokens: 350
+  };
+});
+
+function createAgent(agent) {
+  return agent;
+}
+
+const agents = /*#__PURE__*/Object.freeze({
+      __proto__: null,
+      customerSupportAgent: customerSupportAgent,
+      default: createAgent,
+      facebookAgent: facebookAgent,
+      twitterAgent: twitterAgent
+});
+
 const ai_post = defineEventHandler(async (event) => {
   const body = await readBody(event);
+  const agent = body.agent || "customerSupportAgent";
+  if (Object.keys(agents).includes(agent)) {
+    throw new Error(`${agent} doesn't exist`);
+  }
   const { OPENAI_API_KEY } = useRuntimeConfig();
   const configuration = new Configuration({
     apiKey: OPENAI_API_KEY
@@ -636,7 +744,10 @@ const ai_post = defineEventHandler(async (event) => {
   const openai = new OpenAIApi(configuration);
   const chat_completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    messages: body.messages || [{ role: "user", content: "Hello world" }]
+    messages: body.messages || [{ role: "user", content: "Hello world" }],
+    temperature: body.temperature || 1,
+    // @ts-expect-error checking above if the agent exists
+    ...agents[agent](body)
   });
   return chat_completion.data;
 });
