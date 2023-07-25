@@ -1,7 +1,18 @@
 <script lang="ts" setup>
-import type { AsyncState } from "~~/types"
-const announcement = ref("My generated tweet")
-const state = ref<AsyncState>("complete")
+const { chat, state, firstMessage } = useChatAi({ agent: "facebook" })
+const announcement = computed(() => firstMessage.value?.content ?? "")
+
+interface Props {
+  url: string
+  temperature: number
+}
+const props = defineProps<Props>()
+
+const generate = () => nextTick(() => chat(props))
+
+defineExpose({
+  generate,
+})
 </script>
 
 <template>
@@ -11,7 +22,7 @@ const state = ref<AsyncState>("complete")
     :body="announcement"
     class="mb-10"
   >
-    <button class="btn btn-neutral">Regenerate</button>
+    <button class="btn btn-neutral" @click="generate">Regenerate</button>
     <a target="_blank" class="btn btn-primary">Post</a>
   </CardGeneric>
 </template>
