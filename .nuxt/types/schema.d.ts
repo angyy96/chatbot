@@ -13,6 +13,8 @@ declare module 'nuxt/schema' {
 
       cdnURL: string,
    },
+
+   OPENAI_API_KEY: string,
   }
   interface PublicRuntimeConfig {
 
