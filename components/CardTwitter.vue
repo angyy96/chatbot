@@ -13,6 +13,13 @@ const generate = () => nextTick(() => chat(props))
 defineExpose({
   generate,
 })
+
+const postUrl = computed(
+  () =>
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      announcement.value ?? ""
+    )}`
+)
 </script>
 
 <template>
@@ -23,7 +30,7 @@ defineExpose({
       </div>
       <div class="flex gap-10">
         <button class="btn btn-neutral" @click="generate">Regenerate</button>
-        <a target="_blank" class="btn btn-primary">Post</a>
+        <a :href="postUrl" target="_blank" class="btn btn-primary">Post</a>
       </div>
     </div>
   </CardGeneric>
